@@ -67,7 +67,13 @@ public class Market {
             }
             inputAccepted = true;
           } catch (InputEmptyString ex){
-            System.out.println("Нужно ввести не пустую строку: ");
+            System.out.println("Нужно ввести не пустую строку");
+          } finally {
+            if (inputAccepted)
+              System.out.println("Молодец!");
+            else {
+              System.out.println("Попробуй еще раз( : ");
+            }
           }
         } while (!inputAccepted);
         inputAccepted = false;
