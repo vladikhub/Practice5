@@ -154,6 +154,8 @@ public class Market {
           g.setAvailable(false);
         }
         break;
+      default:
+        System.out.println("Неправильный номер атрибута");
     }
 
   }
