@@ -13,7 +13,7 @@ public class Goods {
   private int cost = 0;
   private double weight = 0.0;
   private boolean available = false;
-  private Scanner sc;
+  private Scanner sc = new Scanner(System.in);
 
   /**
    * Установщик наличия
@@ -107,7 +107,7 @@ public class Goods {
    * Экземпляр пустого товара
    */
   public Goods() {
-    this.sc = new Scanner(System.in);
+
   }
 
   /**
@@ -119,12 +119,11 @@ public class Goods {
    * @param available
    */
   public Goods(String category, String name, int cost, double weight, boolean available) {
-    this.sc = new Scanner(System.in);
-    this.category = category;
-    this.name = name;
-    this.cost = cost;
-    this.weight = weight;
-    this.available = available;
+    setCategory(category);
+    setName(name);
+    setCost(cost);
+    setWeight(weight);
+    setAvailable(available);
   }
 
   /**

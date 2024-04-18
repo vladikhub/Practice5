@@ -423,7 +423,6 @@ public class Market {
             } else {
               available = false;
             }
-            System.out.println("Название товара = " + n + " !");
             g.setName(n);
             g.setCost(cost);
             g.setCategory(cat);
