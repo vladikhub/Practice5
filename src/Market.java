@@ -2,6 +2,10 @@
 // Смольков Владислав OP5 КИ23-16/1б Вариант 5
 //
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -13,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Scanner;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -25,11 +30,12 @@ public class Market {
   public static boolean inputAccepted = false;
   public static Scanner sc;
   public static ArrayList<Goods> goods;
+  private static final Logger LOGGER = Logger.getLogger(Market.class.getName());
 
-  public Market() {
-  }
-
-
+  /**
+   * Метод группировки по категории, принимает
+   * @param list
+   */
   public static void groupByCat(ArrayList<Goods> list) {
     Stream<Goods> goodsStream = list.stream();
     Map<String, List<Goods>> goodsMap = goodsStream.collect(Collectors.groupingBy(Goods:: getCategory));
@@ -45,9 +51,13 @@ public class Market {
       }
       System.out.println();
     }
+    goodsStream.close();
   }
 
-
+  /**
+   * Метод для сложения всех сумм товаров, принимает
+   * @param list
+   */
   public static void sumCosts(ArrayList<Goods> list) {
     Stream<Goods> goodsStream = list.stream();
     OptionalInt summ = goodsStream.mapToInt(Goods::getCost).reduce(Integer::sum);
@@ -57,7 +67,11 @@ public class Market {
     goodsStream.close();
   }
 
-
+  /**
+   * Метод фильтрации товаров по цене, принимает
+   * @param list
+   * @param sc
+   */
   public static void filterGoods(ArrayList<Goods> list, Scanner sc) {
     Stream<Goods> goodsStream = list.stream();
     int cost = 0;
@@ -82,15 +96,15 @@ public class Market {
   public static void main(String[] args) {
     boolean f = true;
     boolean running = true;
-
+    String fileName = "goods.txt";
     ArrayList<Goods> list = new ArrayList<>();
-    Goods good1 = new Goods("Молочное изделие", "Молоко", 130, 0.95, true);
-    Goods good2 = new Goods("Молочное изделие", "Творог", 110, 0.5, true);
-    Goods good3 = new Goods("Хлебобулочное изделиие", "Батон", 50, 0.3, true);
-    Goods good4 = new Goods("Хлебобулочное изделиие", "Хлеб", 30, 0.3, true);
-    Goods good5 = new Goods("Хлебобулочное изделиие", "Слойка", 65, 0.2, true);
-    Goods good6 = new Goods("Мясное", "Колбаса", 250, 0.5, true);
-    Goods good7 = new Goods("Мясное", "Фарш", 450, 1.0, true);
+    Goods good1 = new Goods("Dairy product", "Milk", 130, 0.95, true);
+    Goods good2 = new Goods("Dairy product", "Cottage cheese", 110, 0.5, true);
+    Goods good3 = new Goods("Bakery product", "Loaf", 50, 0.3, true);
+    Goods good4 = new Goods("Bakery product", "Bread", 30, 0.3, true);
+    Goods good5 = new Goods("Bakery product", "Puff", 65, 0.2, true);
+    Goods good6 = new Goods("Meat", "Sausage", 250, 0.5, true);
+    Goods good7 = new Goods("Meat", "Ground meat", 450, 1.0, true);
     Collections.addAll(list, good1, good2, good3, good4, good5, good6, good7);
 
     while(running) {
@@ -105,11 +119,6 @@ public class Market {
       7. Загрузить данные из файловой системы
       8. Выход""");
       System.out.println("Выберете пункт:");
-      int cost;
-      double weight;
-      int av;
-      String cat;
-      String n;
       switch (sc.nextLine()) {
         case "8":
           System.out.println("Выход из приложения...");
@@ -134,28 +143,48 @@ public class Market {
           groupByCat(list);
           break;
         case "6":
-          System.out.println("Введите категорию товара: ");
-          cat = sc.nextLine();
+          try (FileOutputStream file = new FileOutputStream(fileName, false)){
+            String text;
+            for (Goods good : list){
+              text = good.toString() + "\n";
+              file.write(text.getBytes());
+            }
+            System.out.println("Файл успешно записан");
+          } catch ( IOException ex){
+            LOGGER.severe("Ошибка" + ex.getMessage());
+          }
           break;
         case "7":
-          System.out.println("Введите название товара: ");
-          n = sc.nextLine();
-          Goods needgood = new Goods();
-          boolean exist = false;
-          Iterator var19 = goods.iterator();
-
-          while(var19.hasNext()) {
-            Goods good = (Goods)var19.next();
-            if (good.getName().equals(n)) {
-              exist = true;
-              needgood = good;
-              break;
+          try (FileInputStream in = new FileInputStream(fileName);
+              BufferedInputStream file = new BufferedInputStream(in, 200)) {
+            int i;
+            StringBuilder sb = new StringBuilder();
+            while ((i = file.read()) != -1){
+              sb.append((char) i);
             }
-          }
-          if (exist) {
-            break;
-          } else {
-            System.out.println("Товара с таким именем не существует");
+            if (sb.isEmpty()){
+              throw new InputEmptyString("Пустая строка");
+            }
+            String name = null;
+            String cat = null;
+            int cost = 0;
+            double w = 0.0;
+            String str_goods = sb.toString();
+            ArrayList<Goods> goods = new ArrayList<>();
+            for (String goodLine : str_goods.split("\n")){
+              String fields = goodLine.split(":")[1];
+              name = fields.split("name = ")[1].split(";")[0].strip();
+              cat = fields.split("category = ")[1].split(";")[0].strip();
+              cost = Integer.parseInt(fields.split("cost = ")[1].split(";")[0].strip());
+              w = Double.parseDouble(fields.split("weight = ")[1].split(";")[0].replace(",", ".").strip());
+              goods.add(new Goods(cat, name, cost, w, true));
+            }
+            list.addAll(goods);
+            System.out.println("Товары добавлены");
+          } catch (IOException ex){
+            LOGGER.severe("Ошибка" + ex.getMessage());
+          }catch (InputEmptyString ex){
+            System.out.println("Нужно сначала записать файл");
           }
           break;
         default:

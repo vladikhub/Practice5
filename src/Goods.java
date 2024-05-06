@@ -2,6 +2,7 @@
 // Смольков Владислав OP5 КИ23-16/1б Вариант 5
 //
 
+import java.util.Objects;
 import java.util.Scanner;
 
 /**
@@ -156,5 +157,23 @@ public class Goods {
    */
   public double getWeight() {
     return this.weight;
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "Good: category = %s; name = %s; cost = %d; weight = %f;",
+        getCategory(), getName(), getCost(), getWeight());
+  }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Goods product)) return false;
+    return getWeight() == product.getWeight() && Double.compare(getCost(), product.getCost()) == 0 && Objects.equals(getName(), product.getName()) && Objects.equals(getCategory(), product.getCategory());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getWeight(), getCost(), getName(), getCategory(), getAvailable());
   }
 }
